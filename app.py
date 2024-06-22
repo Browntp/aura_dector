@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import TextVectorization
@@ -19,9 +19,13 @@ vectorizer.set_weights(vectorizer_weights)
 # Load the pre-trained model
 model = load_model('emotions_model.h5')
 
+# List to store all predictions
+predictions = []
+
 @app.route('/')
 def home():
-    return render_template('index.html')
+    total = sum(predictions)
+    return render_template('index.html', predictions=predictions, total=total)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -29,8 +33,28 @@ def predict():
     # Preprocess the text input as needed
     # Assuming input text is preprocessed properly
     input_text = vectorizer(np.array([text]))
-    category = model.predict(input_text)
-    return render_template('result.html', category=category)
+    array = model.predict(input_text)
+    aura = converter(array)
+    predictions.append(aura)
+    return redirect(url_for('home'))
+
+
+def converter(array):
+    """
+    # array(['anger', 'disgust', 'fear', 'guilt', 'joy', 'sadness', 'shame'],
+      dtype=object)
+    """
+   
+    anger = array[0][0]
+    disgust = array[0][1]
+    fear = array[0][2]
+    guilt = array[0][3]
+    joy = array[0][4]
+    sadness = array[0][5]
+    shame = array[0][6]
+
+    return (joy + sadness + disgust - (anger + fear + guilt + shame)) * 1000 
+    #return f"{anger} {disgust} {fear} {guilt} {joy} {sadness} {shame}"
 
 if __name__ == '__main__':
     app.run(debug=True)

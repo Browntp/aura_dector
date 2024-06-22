@@ -12,5 +12,14 @@
         <input type="text" id="text" name="text" required>
         <button type="submit">Submit</button>
     </form>
+
+    <h2>Previous Predictions</h2>
+    <ul>
+        {% for prediction in predictions %}
+        <li>{{ prediction }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Total Sum of Predictions: {{ total }}</h2>
 </body>
 </html>
